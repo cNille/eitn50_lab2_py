@@ -24,6 +24,7 @@ sock.bind(address)
 session = ''
 
 sessiontable = {}
+sequencetable = {}
 
 while True:
     data, client_addr = sock.recvfrom(4096) # buffer size is 4096 bytes
@@ -76,20 +77,33 @@ while True:
             # Extract message
             message, session, sequence_number = complete_msg.split(':::::')
 
+            has_shared_key = True
+
+            # If client wants to initiate session
             if(message == "SESSION_SET" and sequence_number == '0'):
-                has_shared_key = True
                 sessiontable[masterkey] = session;
                 print("session:", session)
                 print("=======================")
-                continue;
+                break
+
+            # ensure masterkey in sequencetable
+            if masterkey not in sequencetable:
+                sequencetable[masterkey] = 0
+
+
+            # verify sequence
+            if (sequencetable[masterkey] + 1) != int(sequence_number):
+                sock.sendto('===Sequence is invalid'.encode('utf-8'), client_addr)
+                break
+            sequencetable[masterkey] += 1 
+                
 
             # Respond
-            has_shared_key = True
             sock.sendto(message.encode('utf-8'), client_addr)
             print(decrypted)
 
         if not has_shared_key:
-            sock.sendto('==No shared key found'.encode('utf-8'), client_addr)
+            sock.sendto('===No shared key found'.encode('utf-8'), client_addr)
             
             
 

@@ -39,6 +39,7 @@ def send_message(msg, session, sequence_number):
     # Increment sequence
     return sequence_number + 1
 
+
 def recieve_response():
     echo, serv_addr = sock.recvfrom(4096)
     return echo.decode('utf-8')
