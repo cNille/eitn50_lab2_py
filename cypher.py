@@ -1,3 +1,6 @@
+# Author: gregoltsov
+# Link: https://stackoverflow.com/questions/12524994/encrypt-decrypt-using-pycrypto-aes-256
+# Fetched date: 2017-08-19
 import base64
 import hashlib
 from Crypto import Random
