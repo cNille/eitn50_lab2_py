@@ -2,9 +2,13 @@ from diffiehellman.diffiehellman import DiffieHellman
 import socket, string, random, hashlib
 from cypher import AESCipher 
 
-# Generate keypair
+# Generate keypair. Alice is nickname for the client
 alice = DiffieHellman()
 alice.generate_public_key()    # automatically generates private key
+
+print("=======================")
+print("Public key:", alice.public_key)
+print("=======================")
 
 # Init Socket
 UDP_IP = "127.0.0.1"
@@ -14,14 +18,13 @@ sock = socket.socket(
     socket.AF_INET, # Internet
     socket.SOCK_DGRAM # UDP
 )
-session = ''
 
 # The function used to send messages to the server
 # The aesciph has to be initiated before this is called.
-def send_message(msg, session, sequence_number):
+def send_message(msg, sequence_number):
 
     # Create msg of msg,session and sequence with ':::::' as seperator
-    complete_msg = ':::::'.join([msg, str(session), str(sequence_number)])
+    complete_msg = ':::::'.join([msg, str(sequence_number)])
 
     # Create hash of msg
     hashvalue = hashlib.sha256(complete_msg.encode('utf-8')).digest()
@@ -63,10 +66,9 @@ print("sharedkey;", alice.shared_key)
 print("=======================")
 
 session = random.getrandbits(128)
-sessionmsg = "SESSION_SET" 
-print("session:", sessionmsg)
+print("session:", session)
 print("=======================")
-send_message(sessionmsg, session, 0)
+send_message(str(session), 0)
 
 sequence_number = 1
 
@@ -78,6 +80,6 @@ aesciph = AESCipher(str(session))
 
 while True:
     message = input("Enter a message to send: ")
-    sequence_number = send_message(message, session, sequence_number)
+    sequence_number = send_message(message, sequence_number)
     resp = recieve_response()
     print('Server response:', resp)

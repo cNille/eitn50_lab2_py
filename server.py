@@ -5,9 +5,13 @@ from cypher import AESCipher
 def random_string(N):
     return ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(N))
 
-# Generate keypair
+# Generate keypair. Alice is nickname for the server
 bob = DiffieHellman()
 bob.generate_public_key()
+
+print("=======================")
+print("Public key:", bob.public_key)
+print("=======================")
 
 # Set server url
 UDP_IP = "127.0.0.1"
@@ -75,14 +79,14 @@ while True:
                 continue
 
             # Extract message
-            message, session, sequence_number = complete_msg.split(':::::')
+            message, sequence_number = complete_msg.split(':::::')
 
             has_shared_key = True
 
             # If client wants to initiate session
-            if(message == "SESSION_SET" and sequence_number == '0'):
-                sessiontable[masterkey] = session;
-                print("session:", session)
+            if  sequence_number == '0':
+                sessiontable[masterkey] = message;
+                print("session:", message)
                 print("=======================")
                 break
 
@@ -103,7 +107,7 @@ while True:
             print("---------------")
             print('Message:', message)
             print('Sequence:', sequence_number)
-            print('Session:', session)
+            print('Session:', masterkey)
 
         if not has_shared_key:
             sock.sendto('===No shared key found'.encode('utf-8'), client_addr)
