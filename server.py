@@ -100,7 +100,10 @@ while True:
 
             # Respond
             sock.sendto(message.encode('utf-8'), client_addr)
-            print(decrypted)
+            print("---------------")
+            print('Message:', message)
+            print('Sequence:', sequence_number)
+            print('Session:', session)
 
         if not has_shared_key:
             sock.sendto('===No shared key found'.encode('utf-8'), client_addr)

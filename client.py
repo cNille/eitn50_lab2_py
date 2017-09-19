@@ -14,20 +14,21 @@ sock = socket.socket(
     socket.AF_INET, # Internet
     socket.SOCK_DGRAM # UDP
 )
-
 session = ''
 
-def random_string(N):
-    return ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(N))
-
+# The function used to send messages to the server
+# The aesciph has to be initiated before this is called.
 def send_message(msg, session, sequence_number):
-    # Create msg of msg,session and sequence
+
+    # Create msg of msg,session and sequence with ':::::' as seperator
     complete_msg = ':::::'.join([msg, str(session), str(sequence_number)])
 
     # Create hash of msg
     hashvalue = hashlib.sha256(complete_msg.encode('utf-8')).digest()
     
-    # append hash
+    # append hash with '%%%%%' as seperator
+    # The msg syntax will be: 
+    # START%%%%%MESSAGE:::::SESSION:::::SEQUENCENBRR%%%%%HASHVALUE%%%%%END
     complete_msg = '%%%%%%'.join(['START', complete_msg, str(hashvalue), 'END'])
 
     # Encrypt
@@ -48,7 +49,6 @@ def recieve_response():
 # ===========================
 # Here starts the handshake
 
-#def init_handshake():
 handshake = "PUBLIC_KEY," + str(alice.public_key)
 msg = handshake.encode('utf-8')
 sock.sendto(msg, address)
@@ -66,22 +66,18 @@ session = random.getrandbits(128)
 sessionmsg = "SESSION_SET" 
 print("session:", sessionmsg)
 print("=======================")
-#sock.sendto(sessionmsg.encode('utf-8'), address)
 send_message(sessionmsg, session, 0)
-
-#init_handshake()
 
 sequence_number = 1
 
 # ===========================
-# Here starts the communication
+# Here starts the communication when the session is started
 
-# Use session as masterkey to encrypt instead
+# Use session as masterkey to encrypt instead of shared_key
 aesciph = AESCipher(str(session))
 
 while True:
     message = input("Enter a message to send: ")
-
     sequence_number = send_message(message, session, sequence_number)
     resp = recieve_response()
-    print(resp)
+    print('Server response:', resp)
